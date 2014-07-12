@@ -1,7 +1,6 @@
 package httptests
 
 import (
-  "fmt"
   "errors"
   "strings"
   "io/ioutil"
