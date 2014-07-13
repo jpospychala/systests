@@ -5,23 +5,49 @@ import (
   "strings"
   "io/ioutil"
   "net/http"
+  "time"
   )
 
-func GetHttpUrl(url string, expectedBody string) (int, error) {
+func GetHttpUrl(url string) (string, error) {
   resp, err := http.Get(url)
   if err != nil {
-    return 0, err
+    return "", err
   }
 
   defer resp.Body.Close()
   body, err := ioutil.ReadAll(resp.Body)
   if err != nil {
-    return 0, err
+    return "", err
   }
 
-  if ! strings.Contains(string(body), expectedBody) {
-    return 0, errors.New("Invalid response")
+  return string(body), nil
+}
+
+func ExpectHttpUrl(url string, expectedBody string) (error) {
+  body, err := GetHttpUrl(url)
+  if err != nil {
+    return err
   }
 
-  return 0, nil
+  if ! strings.Contains(body, expectedBody) {
+    return errors.New("Invalid response")
+  }
+
+  return nil
+}
+
+func slice(args ...interface{}) []interface{} {
+    return args
+}
+
+func WaitForUrl(url string, timeout time.Duration) (error) {
+  absTimeout := time.Now().Add(timeout)
+
+  _, err := GetHttpUrl(url)
+  for err != nil && time.Now().Before(absTimeout) {
+    time.Sleep(50 * time.Millisecond)
+    _, err = GetHttpUrl(url)
+  }
+
+  return err
 }
