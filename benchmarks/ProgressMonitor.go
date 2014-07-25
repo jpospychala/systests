@@ -7,19 +7,22 @@ import (
 type ProgressMonitor struct {
 	lastTime time.Time
 	worked   int
-	steps    []BenchmarkResult
+	Steps    []BenchmarkResult
 }
 
-func (pm *ProgressMonitor) start() {
+func (pm *ProgressMonitor) Start() {
 	pm.lastTime = time.Now()
 	pm.worked = 0
 }
 
-func (pm *ProgressMonitor) nextStep() {
-	if len(pm.steps) <= pm.worked {
-		pm.steps = append(pm.steps, BenchmarkResult{})
+func (pm *ProgressMonitor) Step() {
+	if pm.Steps == nil {
+		pm.Steps = make([]BenchmarkResult, 1)
 	}
-	step := &pm.steps[pm.worked]
+	if len(pm.Steps) <= pm.worked {
+		pm.Steps = append(pm.Steps, BenchmarkResult{})
+	}
+	step := &pm.Steps[pm.worked]
 	now := time.Now()
 	step.add(now.Sub(pm.lastTime))
 

@@ -1,12 +1,12 @@
 package benchmarks
 
 func Benchmark(n int, f func(pm *ProgressMonitor)) []BenchmarkResult {
-	pm := ProgressMonitor{steps: make([]BenchmarkResult, 0)}
+	pm := ProgressMonitor{}
 	for i := 0; i < n; i++ {
-		pm.start()
+		pm.Start()
 		f(&pm)
-		pm.nextStep()
+		pm.Step()
 	}
 
-	return pm.steps
+	return pm.Steps
 }

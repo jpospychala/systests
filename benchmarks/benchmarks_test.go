@@ -27,7 +27,7 @@ func Test_that_Benchmark_measures_time(t *testing.T) {
 func Test_that_Benchmark_measures_steps_times(t *testing.T) {
 	f := func(pm *ProgressMonitor) {
 		time.Sleep(100 * time.Millisecond)
-		pm.nextStep()
+		pm.Step()
 		time.Sleep(10 * time.Millisecond)
 	}
 	results := Benchmark(2, f)
