@@ -2,6 +2,7 @@ package httptests
 
 import (
 	"errors"
+	"github.com/jpospychala/systests/benchmarks"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -13,26 +14,26 @@ type Timing struct {
 	responseTime time.Duration
 }
 
-func GetHttpUrl(url string) (string, Timing, error) {
-	start := time.Now()
+func GetHttpUrl(url string, pm *benchmarks.ProgressMonitor) (string, error) {
+	pm.Start()
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", Timing{}, err
+		return "", err
 	}
-	latency := time.Now().Sub(start)
+	pm.Step()
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	responseTime := time.Now().Sub(start)
 	if err != nil {
-		return "", Timing{}, err
+		return "", err
 	}
 
-	return string(body), Timing{latency, responseTime}, nil
+	pm.Step()
+	return string(body), nil
 }
 
-func ExpectHttpUrl(url string, expectedBody string) error {
-	body, _, err := GetHttpUrl(url)
+func ExpectHttpUrl(url string, expectedBody string, pm *benchmarks.ProgressMonitor) error {
+	body, err := GetHttpUrl(url, pm)
 	if err != nil {
 		return err
 	}
@@ -47,10 +48,11 @@ func ExpectHttpUrl(url string, expectedBody string) error {
 func WaitForUrl(url string, timeout time.Duration) error {
 	absTimeout := time.Now().Add(timeout)
 
-	_, _, err := GetHttpUrl(url)
+	pm := &benchmarks.ProgressMonitor{}
+	_, err := GetHttpUrl(url, pm)
 	for err != nil && time.Now().Before(absTimeout) {
 		time.Sleep(50 * time.Millisecond)
-		_, _, err = GetHttpUrl(url)
+		_, err = GetHttpUrl(url, pm)
 	}
 
 	return err
